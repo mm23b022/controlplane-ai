@@ -1,0 +1,86 @@
+# CONTROLPLANE FOUNDATION -> model & pricing registry
+# Prices are USD per 1M tokens. Update these as providers change pricing.
+# `skills` are 0..1 competence scores per task type, used by CAI to estimate
+# the probability that this model will successfully complete a given task.
+
+models:
+  - id: mock-small
+    provider: mock
+    tier: small
+    input_price: 0.10
+    output_price: 0.40
+    context_window: 128000
+    avg_latency_ms: 400
+    supports_reasoning: false
+    modalities: [text]
+    skills:
+      conversation: 0.95
+      summarization: 0.88
+      extraction: 0.90
+      classification: 0.92
+      writing: 0.80
+      coding: 0.55
+      reasoning: 0.45
+      complex_reasoning: 0.25
+      data_analysis: 0.50
+      tool_execution: 0.60
+
+  - id: mock-mid
+    provider: mock
+    tier: mid
+    input_price: 1.00
+    output_price: 5.00
+    context_window: 200000
+    avg_latency_ms: 900
+    supports_reasoning: true
+    modalities: [text, image]
+    skills:
+      conversation: 0.97
+      summarization: 0.95
+      extraction: 0.95
+      classification: 0.95
+      writing: 0.93
+      coding: 0.88
+      reasoning: 0.86
+      complex_reasoning: 0.72
+      data_analysis: 0.87
+      tool_execution: 0.88
+
+  - id: mock-large
+    provider: mock
+    tier: large
+    input_price: 5.00
+    output_price: 25.00
+    context_window: 200000
+    avg_latency_ms: 2200
+    supports_reasoning: true
+    modalities: [text, image, audio]
+    skills:
+      conversation: 0.98
+      summarization: 0.97
+      extraction: 0.97
+      classification: 0.97
+      writing: 0.97
+      coding: 0.96
+      reasoning: 0.96
+      complex_reasoning: 0.94
+      data_analysis: 0.95
+      tool_execution: 0.95
+
+  # ----------------------------------------------------------------------
+  # TODO[FILL]: add your real production models here. Keep the same shape.
+  # The router needs no code change - it reads whatever is in this file.
+  # Example:
+  # - id: gpt-4o-mini
+  #   provider: openai
+  #   ...
+  # ----------------------------------------------------------------------
+
+# Minimum acceptable success probability before CAI will recommend a model.
+success_floor: 0.80
+
+# Verification budget as a fraction of the generation cost, per risk class.
+verification_budget:
+  A: 0.10
+  B: 0.40
+  C: 3.00

@@ -1,0 +1,57 @@
+# RESPONSIBILITY -> deterministic policy engine.
+# Rules are evaluated top-down. The FIRST matching rule wins for that category.
+# Deterministic rules are cheap and unambiguous: use them before any LLM.
+
+privacy:
+  # Which PII classes may leave the system, and to where.
+  # allow_internal: visible to authorised internal roles
+  # allow_external: may be sent outside the organisation
+  classes:
+    email:            {allow_internal: true,  allow_external: true,  severity: LOW}
+    phone:            {allow_internal: true,  allow_external: true,  severity: LOW}
+    account_number:   {allow_internal: true,  allow_external: false, severity: CRITICAL}
+    credit_card:      {allow_internal: false, allow_external: false, severity: CRITICAL}
+    government_id:    {allow_internal: false, allow_external: false, severity: CRITICAL}
+    api_key:          {allow_internal: false, allow_external: false, severity: CRITICAL}
+    private_key:      {allow_internal: false, allow_external: false, severity: CRITICAL}
+    health_record:    {allow_internal: true,  allow_external: false, severity: HIGH}
+
+  # Roles permitted to see internal-only data at all.
+  internal_roles: [support_agent, admin, analyst]
+
+safety:
+  # Deterministic hard blocks. Matched case-insensitively as substrings.
+  # Keep this list narrow and unambiguous; nuance belongs to the semantic checker.
+  hard_block_patterns:
+    - "synthesis route for"
+    - "bypass the authentication"
+    - "disable the audit log"
+  # TODO[FILL]: extend with your organisation's prohibited-content list.
+
+actions:
+  # Action Gate rules. Every side-effecting action must appear here or it is denied.
+  issue_refund:
+    required_permission: refunds.write
+    auto_approve_below_usd: 100
+    hard_limit_usd: 5000            # above this: BLOCK outright
+    reversible: false
+  send_email:
+    required_permission: mail.send
+    auto_approve_below_usd: 0       # always needs the gate, never auto-approves
+    hard_limit_usd: 0
+    reversible: false
+  read_account:
+    required_permission: accounts.read
+    auto_approve_below_usd: 999999
+    hard_limit_usd: 999999
+    reversible: true
+  # TODO[FILL]: register every real tool/API your agents can call.
+  # An action missing from this map is DENIED by default (fail closed).
+
+fairness:
+  protected_attributes:
+    [gender, race, ethnicity, religion, age, disability, nationality, marital_status]
+  # Proxy variables that often stand in for protected attributes.
+  proxy_attributes: [postcode, zip_code, first_language, school_name]
+  # Contexts where a fairness finding is automatically HIGH severity.
+  high_impact_contexts: [hiring, lending, insurance, housing, admissions, policing]

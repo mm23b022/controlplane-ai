@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+*.db
+controlplane_learning.json
+.pytest_cache/
+.venv/
